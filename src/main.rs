@@ -122,6 +122,15 @@ impl State {
             self.selected = Some(*position)
         }
     }
+
+    fn delete_last_word(&mut self) {
+        let Some(space_idx) = self.filter.rfind(|char: char| char.is_whitespace()) else {
+            self.filter = String::new();
+            return;
+        };
+
+        self.filter = self.filter[..space_idx].to_string();
+    }
 }
 
 register_plugin!(State);
@@ -264,6 +273,14 @@ impl ZellijPlugin for State {
                 }
                 BareKey::Char('p') if key.has_modifiers(&[KeyModifier::Ctrl]) => {
                     self.select_up();
+
+                    should_render = true;
+                }
+
+                BareKey::Char('w') if key.has_modifiers(&[KeyModifier::Ctrl]) => {
+                    self.delete_last_word();
+
+                    self.reset_selection();
 
                     should_render = true;
                 }
