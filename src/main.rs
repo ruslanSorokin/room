@@ -1,3 +1,4 @@
+use frizbee::{Config, match_list_indices};
 use owo_colors::{AnsiColors, OwoColorize};
 use std::collections::BTreeMap;
 use std::fmt::Write;
@@ -35,24 +36,34 @@ impl Default for State {
 }
 
 impl State {
-    fn filter(&self, tab: &&TabInfo) -> bool {
-        if self.ignore_case {
-            tab.name.to_lowercase() == self.filter.to_lowercase()
-                || tab
-                    .name
-                    .to_lowercase()
-                    .contains(&self.filter.to_lowercase())
-        } else {
-            tab.name == self.filter || tab.name.contains(&self.filter)
+    fn matched_tabs(&self) -> Vec<&TabInfo> {
+        if self.filter.is_empty() {
+            return self.tabs.iter().collect();
         }
+
+        let tab_names: &Vec<_> = &self.tabs.iter().map(|t| &t.name).collect();
+        let matches = match_list_indices(
+            &self.filter,
+            tab_names,
+            &Config {
+                max_typos: Some(10),
+                sort: true,
+                scoring: Default::default(),
+            },
+        );
+
+        matches
+            .iter()
+            .map(|m| &self.tabs[m.index as usize])
+            .collect()
     }
 
     fn viewable_tabs_iter(&self) -> impl Iterator<Item = &TabInfo> {
-        self.tabs.iter().filter(|tab| self.filter(tab))
+        self.matched_tabs().into_iter()
     }
 
     fn viewable_tabs(&self) -> Vec<&TabInfo> {
-        self.viewable_tabs_iter().collect()
+        self.matched_tabs()
     }
 
     fn reset_selection(&mut self) {
@@ -66,7 +77,7 @@ impl State {
     }
 
     fn select_down(&mut self) {
-        let tabs = self.tabs.iter().filter(|tab| self.filter(tab));
+        let tabs = self.viewable_tabs();
 
         let mut can_select = false;
         let mut first = None;
@@ -89,7 +100,8 @@ impl State {
     }
 
     fn select_up(&mut self) {
-        let tabs = self.tabs.iter().filter(|tab| self.filter(tab)).rev();
+        let mut tabs = self.viewable_tabs();
+        tabs.reverse();
 
         let mut can_select = false;
         let mut last = None;
