@@ -134,7 +134,9 @@ impl ZellijPlugin for State {
 
         if let Some(quick_jump) = configuration.remove("quick_jump") {
             self.quick_jump = quick_jump.trim().parse().unwrap_or_else(|_| {
-                panic!("'quick_jump' config value must be 'true' or 'false', but it's \"{quick_jump}\"")
+                panic!(
+                    "'quick_jump' config value must be 'true' or 'false', but it's \"{quick_jump}\""
+                )
             });
         }
 
@@ -147,7 +149,9 @@ impl ZellijPlugin for State {
             match x.as_str() {
                 "background" | "bg" => self.apply_selection_for_foreground_instead = false,
                 "foreground" | "fg" => self.apply_selection_for_foreground_instead = true,
-                _ => panic!("'apply_selection_accent_to' config value must be 'fg', 'foreground', 'bg' or 'background', but it's \"{x}\""),
+                _ => panic!(
+                    "'apply_selection_accent_to' config value must be 'fg', 'foreground', 'bg' or 'background', but it's \"{x}\""
+                ),
             }
         }
 
@@ -165,7 +169,9 @@ impl ZellijPlugin for State {
             match x.as_str() {
                 "background" | "bg" => self.apply_active_color_for_background_instead = true,
                 "foreground" | "fg" => self.apply_active_color_for_background_instead = false,
-                _ => panic!("'apply_tab_color_to' config value must be 'fg', 'foreground', 'bg' or 'background', but it's \"{x}\""),
+                _ => panic!(
+                    "'apply_tab_color_to' config value must be 'fg', 'foreground', 'bg' or 'background', but it's \"{x}\""
+                ),
             }
         }
 
@@ -197,16 +203,9 @@ impl ZellijPlugin for State {
         let mut should_render = false;
         match event {
             Event::TabUpdate(tab_info) => {
-                self.selected =
-                    tab_info.iter().find_map(
-                        |tab| {
-                            if tab.active {
-                                Some(tab.position)
-                            } else {
-                                None
-                            }
-                        },
-                    );
+                self.selected = tab_info
+                    .iter()
+                    .find_map(|tab| if tab.active { Some(tab.position) } else { None });
 
                 self.tabs = tab_info;
                 should_render = true;
