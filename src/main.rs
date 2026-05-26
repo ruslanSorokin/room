@@ -345,7 +345,12 @@ impl ZellijPlugin for State {
 
     #[allow(unused_mut)]
     fn render(&mut self, _rows: usize, _cols: usize) {
-        println!("{} {}|", ">".cyan().bold(), self.filter.dimmed());
+        println!(
+            "{} {}{}",
+            ">".cyan().bold(),
+            self.filter.dimmed(),
+            "|".blink()
+        );
 
         println!(
             "{}",
